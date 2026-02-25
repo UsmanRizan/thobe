@@ -1,6 +1,7 @@
 import React from "react";
 import { ShoppingBag } from "lucide-react";
 import { Page } from "../types";
+import { MobileNav } from "./MobileNav";
 
 interface NavigationProps {
   currentPage: Page;
@@ -18,6 +19,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   return (
     <nav className="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md border-b border-black/5">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <MobileNav currentPage={currentPage} onPageChange={onPageChange} />
         <div className="flex items-center gap-8">
           <button
             onClick={() => onPageChange("home")}
