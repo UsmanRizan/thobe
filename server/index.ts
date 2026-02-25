@@ -6,6 +6,14 @@ import { initializeDatabase } from "./db/database";
 import { errorHandler, asyncHandler } from "./middleware/errorHandler";
 import reviewRoutes from "./routes/reviews";
 import orderRoutes from "./routes/orders";
+import {
+  testMailerConnection,
+  sendOrderConfirmation,
+} from "./services/emailService";
+import {
+  getOrderConfirmationHTML,
+  formatOrderForEmail,
+} from "./utils/emailTemplate";
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +33,86 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+// Test email endpoint - Verify email configuration is working
+app.post(
+  "/api/test-email",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { email, testMessage } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "Email address is required",
+          code: "MISSING_EMAIL",
+        },
+      });
+    }
+
+    try {
+      // Verify SMTP connection first
+      const isConnected = await testMailerConnection();
+
+      if (!isConnected) {
+        return res.status(500).json({
+          success: false,
+          error: {
+            message: "Failed to connect to SMTP server",
+            code: "SMTP_CONNECTION_FAILED",
+          },
+        });
+      }
+
+      // Create a test order object
+      const testOrder = {
+        id: "test-" + Date.now(),
+        customer_name: "Test Customer",
+        email: email,
+        address: "123 Test Street, Test City, TC 12345",
+        phone: "+1 (555) 123-4567",
+        items: JSON.stringify([
+          {
+            name: "Premium Thobe",
+            quantity: 1,
+            price: 89.99,
+            size: "L",
+          },
+        ]),
+        total_price: 89.99,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      };
+
+      const emailFormattedOrder = formatOrderForEmail(testOrder);
+      const htmlContent = getOrderConfirmationHTML(emailFormattedOrder);
+
+      await sendOrderConfirmation(testOrder, htmlContent);
+
+      res.json({
+        success: true,
+        message: "Test email sent successfully",
+        data: {
+          recipientEmail: email,
+          orderId: testOrder.id,
+          note:
+            process.env.SMTP_HOST === "smtp.ethereal.email"
+              ? "Check your Ethereal Email inbox at https://ethereal.email"
+              : "Check your email inbox",
+        },
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: {
+          message: "Failed to send test email",
+          code: "EMAIL_SEND_FAILED",
+          details: error instanceof Error ? error.message : "Unknown error",
+        },
+      });
+    }
+  }),
+);
 
 // Routes
 app.use("/api/reviews", reviewRoutes);

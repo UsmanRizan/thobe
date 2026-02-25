@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../db/database";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { validateOrder } from "../middleware/validation";
+import { sendOrderConfirmation } from "../services/emailService";
+import {
+  getOrderConfirmationHTML,
+  formatOrderForEmail,
+} from "../utils/emailTemplate";
 
 const router = Router();
 
@@ -61,6 +66,18 @@ router.post(
       if (newOrder && typeof newOrder.items === "string") {
         newOrder.items = JSON.parse(newOrder.items);
       }
+
+      // Send confirmation email asynchronously (don't block the response)
+      setImmediate(async () => {
+        try {
+          const formattedOrder = formatOrderForEmail(newOrder);
+          const htmlContent = getOrderConfirmationHTML(formattedOrder);
+          await sendOrderConfirmation(newOrder, htmlContent);
+        } catch (emailError) {
+          console.error("Failed to send confirmation email:", emailError);
+          // Don't throw error - order was created successfully even if email fails
+        }
+      });
 
       res.status(201).json({
         success: true,
