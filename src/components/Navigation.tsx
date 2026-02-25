@@ -46,6 +46,12 @@ export const Navigation: React.FC<NavigationProps> = ({
           >
             Contact
           </button>
+          <button
+            onClick={() => onPageChange("faq")}
+            className={`hover:text-black transition-colors ${currentPage === "faq" ? "text-black font-bold" : ""}`}
+          >
+            FAQ
+          </button>
         </div>
 
         <button

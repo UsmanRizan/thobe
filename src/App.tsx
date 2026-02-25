@@ -13,6 +13,7 @@ import {
   ReturnsExchanges,
   ContactUs,
   OrderTracking,
+  FAQ,
   ReviewHeader,
   ReviewForm,
   ReviewList,
@@ -120,6 +121,7 @@ export default function App() {
         {currentPage === "returns" && <ReturnsExchanges />}
         {currentPage === "contact" && <ContactUs />}
         {currentPage === "track" && <OrderTracking />}
+        {currentPage === "faq" && <FAQ />}
       </main>
 
       <Footer onPageChange={setCurrentPage} />
