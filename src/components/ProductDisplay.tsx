@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { Star, Check } from "lucide-react";
 import { Width, Length } from "../types";
 import { WIDTHS, LENGTHS } from "../constants/product";
+import { ShareProduct } from "./ShareProduct";
 
 interface ProductDisplayProps {
   selectedWidth: Width;
@@ -183,6 +184,8 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
             Free shipping on all orders within Sri Lanka.
           </p>
         </div>
+
+        <ShareProduct productName={productName} productPrice={productPrice} />
 
         <div className="pt-10 border-t border-black/5 space-y-8">
           <div className="space-y-4">
