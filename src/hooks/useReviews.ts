@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { Review } from "../types";
 import { apiClient } from "../api/client";
 
@@ -29,7 +29,7 @@ export const useReviews = () => {
     fetchReviews();
   }, []);
 
-  const handleReviewSubmit = async (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!newReview.userName || !newReview.comment) return;
 

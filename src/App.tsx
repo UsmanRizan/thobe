@@ -20,6 +20,7 @@ import {
   CartDrawer,
   CheckoutModal,
   OrderConfirmationModal,
+  AdminDashboard,
 } from "./components";
 import { useCart, useReviews, useCheckout, usePageMeta } from "./hooks";
 import { PRODUCT_NAME, PRODUCT_PRICE } from "./constants/product";
@@ -29,6 +30,18 @@ export default function App() {
   const [selectedWidth, setSelectedWidth] = React.useState("M" as any);
   const [selectedLength, setSelectedLength] = React.useState("57" as any);
   const [isCartOpen, setIsCartOpen] = React.useState(false);
+
+  // Check if accessing admin dashboard via secret URL
+  const isAdminPath = window.location.pathname === "/admin123uzman";
+
+  // If accessing admin path, render admin dashboard only
+  if (isAdminPath) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <AdminDashboard />
+      </div>
+    );
+  }
 
   const {
     cart,

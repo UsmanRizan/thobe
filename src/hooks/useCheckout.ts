@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { CartItem } from "../types";
 import { apiClient } from "../api/client";
 
@@ -20,7 +20,7 @@ export const useCheckout = () => {
   });
 
   const handleCheckout = async (
-    e: React.FormEvent,
+    e: FormEvent,
     cart: CartItem[],
     totalPrice: number,
     onSuccess: () => void,

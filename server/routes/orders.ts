@@ -184,4 +184,108 @@ router.get(
   }),
 );
 
+// Admin: Get all orders (for dashboard)
+router.get(
+  "/admin/all-orders",
+  asyncHandler(async (req: Request, res: Response) => {
+    const orders = db
+      .prepare(
+        `
+      SELECT 
+        id,
+        customer_name as customerName,
+        email,
+        address,
+        phone,
+        items,
+        total_price as totalPrice,
+        status,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM orders
+      ORDER BY created_at DESC
+    `,
+      )
+      .all();
+
+    // Parse items JSON for each order
+    const parsedOrders = orders.map((order: any) => {
+      if (typeof order.items === "string") {
+        order.items = JSON.parse(order.items);
+      }
+      return order;
+    });
+
+    res.json({
+      success: true,
+      data: parsedOrders,
+    });
+  }),
+);
+
+// Admin: Update order status
+router.patch(
+  "/admin/orders/:id/status",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ["pending", "processing", "shipped", "delivered"];
+    if (!validStatuses.includes(status)) {
+      throw new ApiError(
+        400,
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        "INVALID_STATUS",
+      );
+    }
+
+    // Check if order exists
+    const order = db.prepare("SELECT id FROM orders WHERE id = ?").get(id);
+    if (!order) {
+      throw new ApiError(404, "Order not found", "ORDER_NOT_FOUND");
+    }
+
+    // Update the order status
+    db.prepare(
+      `
+      UPDATE orders 
+      SET status = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `,
+    ).run(status, id);
+
+    // Return updated order
+    const updatedOrder = db
+      .prepare(
+        `
+      SELECT 
+        id,
+        customer_name as customerName,
+        email,
+        address,
+        phone,
+        items,
+        total_price as totalPrice,
+        status,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM orders
+      WHERE id = ?
+    `,
+      )
+      .get(id);
+
+    if (typeof updatedOrder.items === "string") {
+      updatedOrder.items = JSON.parse(updatedOrder.items);
+    }
+
+    res.json({
+      success: true,
+      data: updatedOrder,
+      message: `Order status updated to ${status}`,
+    });
+  }),
+);
+
 export default router;

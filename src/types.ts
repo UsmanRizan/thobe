@@ -11,13 +11,16 @@ export type Length =
   | "61"
   | "62";
 
+export type OrderStatus = "pending" | "processing" | "shipped" | "delivered";
+
 export type Page =
   | "home"
   | "shipping"
   | "returns"
   | "contact"
   | "track"
-  | "faq";
+  | "faq"
+  | "admin";
 
 export interface CartItem {
   id: string;
@@ -34,4 +37,17 @@ export interface Review {
   rating: number;
   comment: string;
   date: string;
+}
+
+export interface Order {
+  id: string;
+  customerName: string;
+  email: string;
+  address: string;
+  phone: string;
+  items: CartItem[];
+  totalPrice: number;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
 }
