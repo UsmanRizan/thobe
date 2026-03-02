@@ -46,6 +46,25 @@ check_docker() {
         exit 1
     fi
     print_success "Docker is installed"
+    
+    # Check if user can access docker without sudo
+    if ! docker ps &> /dev/null; then
+        print_error "Cannot access Docker daemon!"
+        echo ""
+        echo "This is usually caused by missing group permissions."
+        echo ""
+        print_warning "Fix with one of these options:"
+        echo ""
+        echo "Option 1 (Recommended): Add user to docker group"
+        echo "  sudo usermod -aG docker \$USER"
+        echo "  newgrp docker"
+        echo "  Then exit and re-run: ./deploy.sh"
+        echo ""
+        echo "Option 2 (Quick): Run with sudo"
+        echo "  sudo ./deploy.sh"
+        echo ""
+        exit 1
+    fi
 }
 
 check_env_file() {
