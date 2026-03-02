@@ -15,6 +15,7 @@ RUN npm ci
 COPY src ./src
 COPY server ./server
 COPY public ./public
+COPY index.html ./
 COPY vite.config.ts ./
 
 # Build frontend (Vite)
