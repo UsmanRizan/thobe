@@ -1,0 +1,63 @@
+# Docker build ignore file
+# Files listed here won't be copied into the Docker image
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Node modules (will be installed in container)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Environment files (security - don't include in image)
+.env
+.env.local
+.env.*.local
+
+# Build artifacts (will be rebuilt in container)
+dist
+build
+*.tsbuildinfo
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+LICENSE
+CONTRIBUTING.md
+DOCKER_DEPLOYMENT.md
+EMAIL_SETUP.md
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Development scripts
+deploy.sh
+*.sh
+
+# Testing
+test
+tests
+__tests__
+*.test.js
+*.spec.js
+coverage
+
+# Temporary files
+tmp
+temp
+*.tmp
+
+# OS files
+.gitkeep
