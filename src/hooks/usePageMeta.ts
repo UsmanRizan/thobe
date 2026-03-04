@@ -55,7 +55,7 @@ export const usePageMeta = (
         "@context": "https://schema.org/",
         "@type": "Product",
         name: PRODUCT_NAME,
-        image: ["https://picsum.photos/seed/thobe-main/1200/1600"],
+        image: ["/thob2.png"],
         description:
           "A masterpiece of minimalist design. Our Signature White Thobe is crafted from premium, breathable cotton-blend fabric.",
         brand: {

@@ -24,6 +24,14 @@ export const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
           <ul className="space-y-3 text-sm text-black/60">
             <li>
               <button
+                onClick={() => onPageChange("size-guide")}
+                className="hover:text-black"
+              >
+                Size Guide
+              </button>
+            </li>
+            <li>
+              <button
                 onClick={() => onPageChange("shipping")}
                 className="hover:text-black"
               >

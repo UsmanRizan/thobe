@@ -16,6 +16,7 @@ interface ProductDisplayProps {
   reviewCount: number;
   productName: string;
   productPrice: number;
+  onSizeGuideClick?: () => void;
 }
 
 export const ProductDisplay: React.FC<ProductDisplayProps> = ({
@@ -29,6 +30,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
   reviewCount,
   productName,
   productPrice,
+  onSizeGuideClick,
 }) => {
   const [zoomPos, setZoomPos] = React.useState({ x: 50, y: 50 });
   const [isZooming, setIsZooming] = React.useState(false);
@@ -54,7 +56,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           className="aspect-[3/4] bg-[#F5F5F0] rounded-2xl overflow-hidden relative group cursor-zoom-in"
         >
           <img
-            src="https://picsum.photos/seed/thobe-main/1200/1600"
+            src="/thobe2.png"
             alt="Signature White Thobe - Full Length View"
             className={`w-full h-full object-cover mix-blend-multiply opacity-90 transition-transform duration-200 ease-out ${isZooming ? "scale-[2.5]" : "scale-100"}`}
             style={{
@@ -69,7 +71,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
         <div className="grid grid-cols-2 gap-6">
           <div className="aspect-[3/4] bg-[#F5F5F0] rounded-2xl overflow-hidden">
             <img
-              src="https://picsum.photos/seed/thobe-detail-1/600/800"
+              src="/thobe1.png"
               alt="Signature White Thobe - Collar and Button Detail"
               className="w-full h-full object-cover mix-blend-multiply opacity-80"
               referrerPolicy="no-referrer"
@@ -77,7 +79,7 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           </div>
           <div className="aspect-[3/4] bg-[#F5F5F0] rounded-2xl overflow-hidden">
             <img
-              src="https://picsum.photos/seed/thobe-child/600/800"
+              src="/thobe3.png"
               alt="Signature White Thobe - Junior Sizes Available"
               className="w-full h-full object-cover mix-blend-multiply opacity-80"
               referrerPolicy="no-referrer"
@@ -117,6 +119,14 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
               <label className="text-xs uppercase tracking-widest font-bold text-black/40">
                 Width :
               </label>
+              {onSizeGuideClick && (
+                <button
+                  onClick={onSizeGuideClick}
+                  className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  Size Guide
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-3">
               {WIDTHS.map((width) => (
@@ -139,9 +149,19 @@ export const ProductDisplay: React.FC<ProductDisplayProps> = ({
           </div>
 
           <div className="space-y-4">
-            <label className="text-xs uppercase tracking-widest font-bold text-black/40">
-              Length :
-            </label>
+            <div className="flex justify-between items-end">
+              <label className="text-xs uppercase tracking-widest font-bold text-black/40">
+                Length :
+              </label>
+              {onSizeGuideClick && (
+                <button
+                  onClick={onSizeGuideClick}
+                  className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  Size Guide
+                </button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-3">
               {LENGTHS.map((length) => (
                 <button

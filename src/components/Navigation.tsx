@@ -37,6 +37,12 @@ export const Navigation: React.FC<NavigationProps> = ({
             Collection
           </button>
           <button
+            onClick={() => onPageChange("size-guide")}
+            className={`hover:text-black transition-colors ${currentPage === "size-guide" ? "text-black font-bold" : ""}`}
+          >
+            Size Guide
+          </button>
+          <button
             onClick={() => onPageChange("track")}
             className={`hover:text-black transition-colors ${currentPage === "track" ? "text-black font-bold" : ""}`}
           >

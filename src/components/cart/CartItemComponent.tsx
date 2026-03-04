@@ -15,7 +15,7 @@ export const CartItemComponent: React.FC<CartItemComponentProps> = ({
     <div className="flex gap-6">
       <div className="w-24 h-32 bg-[#F5F5F0] rounded-xl overflow-hidden flex-shrink-0">
         <img
-          src="https://picsum.photos/seed/thobe-main/200/300"
+          src="/thobe2.png"
           alt={item.name}
           className="w-full h-full object-cover mix-blend-multiply opacity-80"
           referrerPolicy="no-referrer"

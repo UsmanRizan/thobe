@@ -20,6 +20,7 @@ export type Page =
   | "contact"
   | "track"
   | "faq"
+  | "size-guide"
   | "admin";
 
 export interface CartItem {

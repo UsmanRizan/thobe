@@ -14,6 +14,7 @@ import {
   ContactUs,
   OrderTracking,
   FAQ,
+  SizeGuide,
   ReviewHeader,
   ReviewForm,
   ReviewList,
@@ -100,11 +101,15 @@ export default function App() {
               selectedLength={selectedLength}
               onLengthChange={setSelectedLength}
               isAdding={isAdding}
-              onAddToCart={() => addToCart(selectedWidth, selectedLength)}
+              onAddToCart={() => {
+                addToCart(selectedWidth, selectedLength);
+                setIsCartOpen(true);
+              }}
               averageRating={averageRating}
               reviewCount={reviews.length}
               productName={PRODUCT_NAME}
               productPrice={PRODUCT_PRICE}
+              onSizeGuideClick={() => setCurrentPage("size-guide")}
             />
 
             {/* Reviews Section */}
@@ -135,6 +140,7 @@ export default function App() {
         {currentPage === "contact" && <ContactUs />}
         {currentPage === "track" && <OrderTracking />}
         {currentPage === "faq" && <FAQ />}
+        {currentPage === "size-guide" && <SizeGuide />}
       </main>
 
       <Footer onPageChange={setCurrentPage} />

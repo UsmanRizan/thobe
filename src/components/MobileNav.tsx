@@ -21,6 +21,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({
 
   const navItems = [
     { label: "Collection", page: "home" as Page },
+    { label: "Size Guide", page: "size-guide" as Page },
     { label: "Track Order", page: "track" as Page },
     { label: "Contact", page: "contact" as Page },
     { label: "FAQ", page: "faq" as Page },
