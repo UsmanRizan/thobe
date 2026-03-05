@@ -5,7 +5,7 @@
 1. Push code to GitHub/GitLab/Bitbucket
 2. Go to [render.com](https://render.com)
 3. Create account and connect git repo
-4. Click "New → Blueprint" 
+4. Click "New → Blueprint"
 5. Render auto-detects `render.yaml`
 6. Add SMTP environment variables
 7. Deploy! 🚀
@@ -41,6 +41,7 @@ git push
 In Render dashboard, go to your service and click **"Environment"**:
 
 **Required for Email:**
+
 ```
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
@@ -53,6 +54,7 @@ CUSTOMER_PORTAL_URL=https://your-app-name.onrender.com
 ```
 
 **Optional:**
+
 ```
 GEMINI_API_KEY=<your-key>
 ```
@@ -76,37 +78,37 @@ curl https://your-app-name.onrender.com/api/health
 
 ## What Files Were Created/Updated
 
-| File | Purpose |
-|------|---------|
-| `Dockerfile` | Docker configuration for containerization |
-| `render.yaml` | Render deployment config (auto-deployment) |
-| `RENDER_DEPLOYMENT.md` | Detailed deployment guide |
-| `DEPLOYMENT_CHECKLIST.md` | Pre-deployment checklist |
-| `package.json` | Added `start` and `build:prod` scripts |
-| `server/index.ts` | Updated to serve React static files |
+| File                      | Purpose                                    |
+| ------------------------- | ------------------------------------------ |
+| `Dockerfile`              | Docker configuration for containerization  |
+| `render.yaml`             | Render deployment config (auto-deployment) |
+| `RENDER_DEPLOYMENT.md`    | Detailed deployment guide                  |
+| `DEPLOYMENT_CHECKLIST.md` | Pre-deployment checklist                   |
+| `package.json`            | Added `start` and `build:prod` scripts     |
+| `server/index.ts`         | Updated to serve React static files        |
 
 ---
 
 ## Key Environment Variables Needed
 
-| Variable | Example | Notes |
-|----------|---------|-------|
-| `SMTP_HOST` | `smtp.gmail.com` | Your email provider's SMTP server |
-| `SMTP_PORT` | `587` | Usually 587 (TLS) or 465 (SSL) |
-| `SMTP_USER` | `your-email@gmail.com` | Your email address |
-| `SMTP_PASSWORD` | `auto gener password` | For Gmail: use app-specific password |
-| `CUSTOMER_PORTAL_URL` | `https://app.onrender.com` | Your deployed app URL |
+| Variable              | Example                    | Notes                                |
+| --------------------- | -------------------------- | ------------------------------------ |
+| `SMTP_HOST`           | `smtp.gmail.com`           | Your email provider's SMTP server    |
+| `SMTP_PORT`           | `587`                      | Usually 587 (TLS) or 465 (SSL)       |
+| `SMTP_USER`           | `your-email@gmail.com`     | Your email address                   |
+| `SMTP_PASSWORD`       | `auto gener password`      | For Gmail: use app-specific password |
+| `CUSTOMER_PORTAL_URL` | `https://app.onrender.com` | Your deployed app URL                |
 
 ---
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Build fails | Check build logs in Render dashboard |
-| App won't start | Verify environment variables are set |
+| Issue             | Solution                                  |
+| ----------------- | ----------------------------------------- |
+| Build fails       | Check build logs in Render dashboard      |
+| App won't start   | Verify environment variables are set      |
 | Email not working | Test SMTP credentials, check service logs |
-| Database error | Check disk space, verify DB path |
+| Database error    | Check disk space, verify DB path          |
 
 ---
 

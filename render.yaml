@@ -5,7 +5,7 @@ services:
     dockerfile: ./Dockerfile
     region: oregon
     plan: starter
-    
+
     # Environment variables
     envVars:
       - key: NODE_ENV
@@ -14,48 +14,48 @@ services:
         value: "true"
       - key: PORT
         value: 3001
-      
+
       # These must be configured in Render dashboard or pass as secrets
       - key: GEMINI_API_KEY
         scope: build
         sync: false
-      
+
       - key: SMTP_HOST
         sync: false
-      
+
       - key: SMTP_PORT
         sync: false
-      
+
       - key: SMTP_SECURE
         sync: false
-      
+
       - key: SMTP_USER
         sync: false
-      
+
       - key: SMTP_PASSWORD
         sync: false
-      
+
       - key: SMTP_FROM_EMAIL
         sync: false
-      
+
       - key: SMTP_REPLY_TO
         sync: false
-      
+
       - key: CUSTOMER_PORTAL_URL
         sync: false
-      
+
       - key: DB_PATH
         value: ./data/ecommerce.db
-    
+
     # Build settings
     buildCommand: "npm install"
     startCommand: "node --loader tsx server/index.ts"
-    
+
     # Volumes to persist database
     disks:
       - name: database
         mountPath: /app/data
         sizeGB: 1
-    
+
     # Auto-deploy on git push
     autoDeploy: true

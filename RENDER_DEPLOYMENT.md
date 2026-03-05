@@ -106,6 +106,7 @@ Your application uses SQLite database stored in `/app/data/`. Render provides a 
 - Data persists across redeploys and server restarts
 
 **Backup your database regularly:**
+
 ```bash
 # Download database from Render
 # Use Render dashboard → Service → Disk → Download files
@@ -122,27 +123,32 @@ git push  # Render auto-deploys!
 ```
 
 To disable auto-deploy:
+
 1. Go to Render dashboard
 2. Service settings → **"Auto-Deploy"** → Turn off
 
 ## Troubleshooting
 
 ### Build Fails
+
 - Check build logs in Render dashboard
 - Ensure all dependencies are in `package.json`
 - Verify `Dockerfile` is valid
 
 ### Application Won't Start
+
 - Check runtime logs: Dashboard → Service → Logs
 - Verify all environment variables are set
 - Check database path is accessible
 
 ### Email Not Working
+
 - Verify SMTP credentials in environment variables
 - Check Email service logs
 - Test with `/api/test-email` endpoint if available
 
 ### Application is Slow
+
 - Starter plan may have limited resources
 - Consider upgrading to Standard plan
 - Check for unnecessary database queries
@@ -158,11 +164,11 @@ Via Render Dashboard:
 
 ## Estimated Costs
 
-| Resource | Starter | Standard |
-|----------|---------|----------|
-| Web Service | $7/month | $12/month |
-| Disk Storage | Included | Included (10GB) |
-| Bandwidth | Generous free tier | Overage after limit |
+| Resource     | Starter            | Standard            |
+| ------------ | ------------------ | ------------------- |
+| Web Service  | $7/month           | $12/month           |
+| Disk Storage | Included           | Included (10GB)     |
+| Bandwidth    | Generous free tier | Overage after limit |
 
 Free tier available with restrictions.
 

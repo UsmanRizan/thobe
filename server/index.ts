@@ -30,8 +30,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the React app build directory
-const distPath = path.join(process.cwd(), 'dist');
-if (process.env.NODE_ENV === 'production' || process.env.SERVE_DIST === 'true') {
+const distPath = path.join(process.cwd(), "dist");
+if (
+  process.env.NODE_ENV === "production" ||
+  process.env.SERVE_DIST === "true"
+) {
   app.use(express.static(distPath));
 }
 
@@ -125,7 +128,10 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
 
 // SPA fallback - serve index.html for all non-API routes in production
-if (process.env.NODE_ENV === 'production' || process.env.SERVE_DIST === 'true') {
+if (
+  process.env.NODE_ENV === "production" ||
+  process.env.SERVE_DIST === "true"
+) {
   app.get("*", (req: Request, res: Response) => {
     res.sendFile(path.join(distPath, "index.html"));
   });
