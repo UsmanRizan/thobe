@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Order, OrderStatus } from "../types";
 
-const API_BASE_URL = "http://localhost:3001/api/orders";
+const API_BASE_URL =
+  process.env.API_BASE_URL + "/orders" || "http://localhost:3001/api/orders";
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
