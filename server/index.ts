@@ -1,8 +1,16 @@
+import dotenv from "dotenv";
+
+// Load environment variables FIRST, before any other imports
+dotenv.config();
+
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import path from "path";
-import dotenv from "dotenv";
-import { initializeDatabase } from "./db/database";
+import { fileURLToPath } from "url";
+import { initializeDatabase, closeDatabase } from "./db/database";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { errorHandler, asyncHandler } from "./middleware/errorHandler";
 import reviewRoutes from "./routes/reviews";
 import orderRoutes from "./routes/orders";
@@ -15,28 +23,18 @@ import {
   formatOrderForEmail,
 } from "./utils/emailTemplate";
 
-// Load environment variables
-dotenv.config();
-
 const app = express();
 const PORT = parseInt(process.env.PORT || "3001", 10);
-
-// Initialize database
-initializeDatabase();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from the React app build directory
-const distPath = path.join(process.cwd(), "dist");
-if (
-  process.env.NODE_ENV === "production" ||
-  process.env.SERVE_DIST === "true"
-) {
-  app.use(express.static(distPath));
-}
+// Serve static files from the Vite build output directory (frontend)
+// This serves the React app's compiled files and handles client-side routing
+const staticDir = path.join(__dirname, "..", "dist");
+app.use(express.static(staticDir));
 
 // Health check
 app.get("/api/health", (req: Request, res: Response) => {
@@ -127,41 +125,60 @@ app.post(
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
 
-// SPA fallback - serve index.html for all non-API routes in production
-if (
-  process.env.NODE_ENV === "production" ||
-  process.env.SERVE_DIST === "true"
-) {
-  app.get("*", (req: Request, res: Response) => {
-    res.sendFile(path.join(distPath, "index.html"));
+// SPA fallback: serve index.html for all non-API routes
+// This allows React Router to handle client-side routing
+app.get("*", (req: Request, res: Response) => {
+  const indexPath = path.join(staticDir, "index.html");
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(500).json({
+        success: false,
+        error: {
+          message: "Unable to serve the application",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
   });
-} else {
-  // 404 handler for development
-  app.use((req: Request, res: Response) => {
-    res.status(404).json({
-      success: false,
-      error: {
-        message: "Route not found",
-        code: "NOT_FOUND",
-      },
-    });
+});
+
+// 404 handler (fallback, may not reach here due to SPA fallback above)
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      message: "Route not found",
+      code: "NOT_FOUND",
+    },
   });
-}
+});
 
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log(`\n🚀 Server running at http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health\n`);
-});
+// Start server with async database initialization
+async function startServer() {
+  try {
+    await initializeDatabase();
 
-// Graceful shutdown
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully");
-  server.close(() => {
-    console.log("Server closed");
-    process.exit(0);
-  });
-});
+    const server = app.listen(PORT, () => {
+      console.log(`\n🚀 Server running at http://localhost:${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/api/health\n`);
+    });
+
+    // Graceful shutdown
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM received, shutting down gracefully");
+      server.close(async () => {
+        await closeDatabase();
+        console.log("Server closed");
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();

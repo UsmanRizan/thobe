@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-import db from "../db/database";
+import { Review } from "../db/models/Review";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { validateReview } from "../middleware/validation";
 
@@ -10,24 +10,20 @@ const router = Router();
 router.get(
   "/",
   asyncHandler(async (req: Request, res: Response) => {
-    const reviews = db
-      .prepare(
-        `
-      SELECT 
-        id,
-        user_name as userName,
-        rating,
-        comment,
-        created_at as date
-      FROM reviews
-      ORDER BY created_at DESC
-    `,
-      )
-      .all();
+    const reviews = await Review.find().sort({ created_at: -1 }).lean();
+
+    // Format response with camelCase field names
+    const formattedReviews = reviews.map((review: any) => ({
+      id: review.id,
+      userName: review.user_name,
+      rating: review.rating,
+      comment: review.comment,
+      date: review.created_at.toISOString(),
+    }));
 
     res.json({
       success: true,
-      data: reviews,
+      data: formattedReviews,
     });
   }),
 );
@@ -46,31 +42,26 @@ router.post(
     const id = uuidv4();
 
     try {
-      db.prepare(
-        `
-        INSERT INTO reviews (id, user_name, rating, comment)
-        VALUES (?, ?, ?, ?)
-      `,
-      ).run(id, user_name, parseInt(rating), comment);
+      const newReview = await Review.create({
+        id,
+        user_name,
+        rating: parseInt(rating),
+        comment,
+        created_at: new Date(),
+      });
 
-      const newReview = db
-        .prepare(
-          `
-        SELECT 
-          id,
-          user_name as userName,
-          rating,
-          comment,
-          created_at as date
-        FROM reviews
-        WHERE id = ?
-      `,
-        )
-        .get(id);
+      // Format response with camelCase field names
+      const reviewData = {
+        id: newReview.id,
+        userName: newReview.user_name,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: newReview.created_at.toISOString(),
+      };
 
       res.status(201).json({
         success: true,
-        data: newReview,
+        data: reviewData,
         message: "Review created successfully",
       });
     } catch (err) {

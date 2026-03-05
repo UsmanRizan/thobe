@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-import db from "../db/database";
+import { Order } from "../db/models/Order";
 import { asyncHandler, ApiError } from "../middleware/errorHandler";
 import { validateOrder } from "../middleware/validation";
 import { sendOrderConfirmation } from "../services/emailService";
@@ -26,53 +26,51 @@ router.post(
     const id = uuidv4();
 
     try {
-      db.prepare(
-        `
-        INSERT INTO orders (id, customer_name, email, address, phone, items, total_price, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      ).run(
+      const newOrder = await Order.create({
         id,
         customer_name,
         email,
         address,
         phone,
-        JSON.stringify(items),
+        items,
         total_price,
-        "pending",
-      );
+        status: "pending",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
 
-      const newOrder = db
-        .prepare(
-          `
-        SELECT 
-          id,
-          customer_name as customerName,
-          email,
-          address,
-          phone,
-          items,
-          total_price as totalPrice,
-          status,
-          created_at as createdAt,
-          updated_at as updatedAt
-        FROM orders
-        WHERE id = ?
-      `,
-        )
-        .get(id);
-
-      // Parse items JSON
-      if (newOrder && typeof newOrder.items === "string") {
-        newOrder.items = JSON.parse(newOrder.items);
-      }
+      // Format response with camelCase field names
+      const orderData = {
+        id: newOrder.id,
+        customerName: newOrder.customer_name,
+        email: newOrder.email,
+        address: newOrder.address,
+        phone: newOrder.phone,
+        items: newOrder.items,
+        totalPrice: newOrder.total_price,
+        status: newOrder.status,
+        createdAt: newOrder.created_at,
+        updatedAt: newOrder.updated_at,
+      };
 
       // Send confirmation email asynchronously (don't block the response)
       setImmediate(async () => {
         try {
-          const formattedOrder = formatOrderForEmail(newOrder);
+          // Create email format with snake_case field names
+          const emailOrderData = {
+            id: newOrder.id,
+            customer_name: newOrder.customer_name,
+            email: newOrder.email,
+            address: newOrder.address,
+            phone: newOrder.phone,
+            items: newOrder.items, // Mongoose documents are already in the correct format
+            total_price: newOrder.total_price,
+            status: newOrder.status,
+            created_at: newOrder.created_at.toISOString(),
+          };
+          const formattedOrder = formatOrderForEmail(emailOrderData);
           const htmlContent = getOrderConfirmationHTML(formattedOrder);
-          await sendOrderConfirmation(newOrder, htmlContent);
+          await sendOrderConfirmation(emailOrderData as any, htmlContent);
         } catch (emailError) {
           console.error("Failed to send confirmation email:", emailError);
           // Don't throw error - order was created successfully even if email fails
@@ -81,7 +79,7 @@ router.post(
 
       res.status(201).json({
         success: true,
-        data: newOrder,
+        data: orderData,
         message: "Order created successfully",
       });
     } catch (err) {
@@ -96,38 +94,29 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const order = db
-      .prepare(
-        `
-      SELECT 
-        id,
-        customer_name as customerName,
-        email,
-        address,
-        phone,
-        items,
-        total_price as totalPrice,
-        status,
-        created_at as createdAt,
-        updated_at as updatedAt
-      FROM orders
-      WHERE id = ?
-    `,
-      )
-      .get(id);
+    const order = await Order.findOne({ id }).lean();
 
     if (!order) {
       throw new ApiError(404, "Order not found", "ORDER_NOT_FOUND");
     }
 
-    // Parse items JSON
-    if (typeof order.items === "string") {
-      order.items = JSON.parse(order.items);
-    }
+    // Format response with camelCase field names
+    const orderData = {
+      id: order.id,
+      customerName: order.customer_name,
+      email: order.email,
+      address: order.address,
+      phone: order.phone,
+      items: order.items,
+      totalPrice: order.total_price,
+      status: order.status,
+      createdAt: order.created_at,
+      updatedAt: order.updated_at,
+    };
 
     res.json({
       success: true,
-      data: order,
+      data: orderData,
     });
   }),
 );
@@ -138,25 +127,14 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    const order = db
-      .prepare(
-        `
-      SELECT 
-        id,
-        status,
-        created_at as createdAt
-      FROM orders
-      WHERE id = ?
-    `,
-      )
-      .get(id);
+    const order = await Order.findOne({ id }).select("id status created_at");
 
     if (!order) {
       throw new ApiError(404, "Order not found", "ORDER_NOT_FOUND");
     }
 
     // Calculate mock tracking status based on order age
-    const createdTime = new Date(order.createdAt).getTime();
+    const createdTime = new Date(order.created_at).getTime();
     const now = Date.now();
     const ageHours = (now - createdTime) / (1000 * 60 * 60);
 
@@ -177,7 +155,7 @@ router.get(
       data: {
         orderId: id,
         status: trackingStatus,
-        createdAt: order.createdAt,
+        createdAt: order.created_at.toISOString(),
         estimatedDelivery: estimatedDelivery.toISOString(),
       },
     });
@@ -188,37 +166,25 @@ router.get(
 router.get(
   "/admin/all-orders",
   asyncHandler(async (req: Request, res: Response) => {
-    const orders = db
-      .prepare(
-        `
-      SELECT 
-        id,
-        customer_name as customerName,
-        email,
-        address,
-        phone,
-        items,
-        total_price as totalPrice,
-        status,
-        created_at as createdAt,
-        updated_at as updatedAt
-      FROM orders
-      ORDER BY created_at DESC
-    `,
-      )
-      .all();
+    const orders = await Order.find().sort({ created_at: -1 }).lean();
 
-    // Parse items JSON for each order
-    const parsedOrders = orders.map((order: any) => {
-      if (typeof order.items === "string") {
-        order.items = JSON.parse(order.items);
-      }
-      return order;
-    });
+    // Format response with camelCase field names
+    const formattedOrders = orders.map((order: any) => ({
+      id: order.id,
+      customerName: order.customer_name,
+      email: order.email,
+      address: order.address,
+      phone: order.phone,
+      items: order.items,
+      totalPrice: order.total_price,
+      status: order.status,
+      createdAt: order.created_at,
+      updatedAt: order.updated_at,
+    }));
 
     res.json({
       success: true,
-      data: parsedOrders,
+      data: formattedOrders,
     });
   }),
 );
@@ -240,49 +206,34 @@ router.patch(
       );
     }
 
-    // Check if order exists
-    const order = db.prepare("SELECT id FROM orders WHERE id = ?").get(id);
-    if (!order) {
+    // Check if order exists and update it
+    const updatedOrder = await Order.findOneAndUpdate(
+      { id },
+      { status, updated_at: new Date() },
+      { new: true },
+    ).lean();
+
+    if (!updatedOrder) {
       throw new ApiError(404, "Order not found", "ORDER_NOT_FOUND");
     }
 
-    // Update the order status
-    db.prepare(
-      `
-      UPDATE orders 
-      SET status = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `,
-    ).run(status, id);
-
-    // Return updated order
-    const updatedOrder = db
-      .prepare(
-        `
-      SELECT 
-        id,
-        customer_name as customerName,
-        email,
-        address,
-        phone,
-        items,
-        total_price as totalPrice,
-        status,
-        created_at as createdAt,
-        updated_at as updatedAt
-      FROM orders
-      WHERE id = ?
-    `,
-      )
-      .get(id);
-
-    if (typeof updatedOrder.items === "string") {
-      updatedOrder.items = JSON.parse(updatedOrder.items);
-    }
+    // Format response with camelCase field names
+    const orderData = {
+      id: updatedOrder.id,
+      customerName: updatedOrder.customer_name,
+      email: updatedOrder.email,
+      address: updatedOrder.address,
+      phone: updatedOrder.phone,
+      items: updatedOrder.items,
+      totalPrice: updatedOrder.total_price,
+      status: updatedOrder.status,
+      createdAt: updatedOrder.created_at,
+      updatedAt: updatedOrder.updated_at,
+    };
 
     res.json({
       success: true,
-      data: updatedOrder,
+      data: orderData,
       message: `Order status updated to ${status}`,
     });
   }),
