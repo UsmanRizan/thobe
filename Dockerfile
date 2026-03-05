@@ -17,6 +17,20 @@ COPY index.html ./
 # Build React app
 RUN npm run build
 
+# Build stage for backend (compile TypeScript)
+FROM node:20-alpine AS backend-builder
+WORKDIR /app
+
+# Copy files needed for backend compilation
+COPY package*.json tsconfig.server.json ./
+COPY server ./server
+
+# Install dependencies
+RUN npm ci
+
+# Compile TypeScript backend to JavaScript
+RUN npm run build:server
+
 # Final stage - production runtime
 FROM node:20-alpine
 WORKDIR /app
@@ -24,13 +38,12 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
-# Copy package files and install dependencies (including tsx for running TypeScript)
+# Copy package files and install production dependencies only
 COPY package*.json ./
-COPY tsconfig.server.json ./
-RUN npm install && npm cache clean --force
+RUN npm ci --only=production && npm cache clean --force
 
-# Copy backend source (TypeScript files)
-COPY server ./server
+# Copy compiled backend (JavaScript) from builder
+COPY --from=backend-builder /app/server ./server
 
 # Copy frontend build from builder stage
 COPY --from=frontend-builder /app/dist ./dist
@@ -49,6 +62,6 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Expose port (default 3001, can be overridden via PORT env var)
 EXPOSE 3001
 
-# Use dumb-init to properly handle signals and run the server with tsx
+# Use dumb-init to properly handle signals and run compiled server
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "--import", "tsx/esm", "server/index.ts"]
+CMD ["node", "server/index.ts"]

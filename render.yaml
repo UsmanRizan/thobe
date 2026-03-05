@@ -49,7 +49,8 @@ services:
 
     # Build settings
     buildCommand: "npm install"
-    startCommand: "node --import tsx/esm server/index.ts"
+    
+    # startCommand is not needed for Docker - Dockerfile CMD is used instead
 
     # Volumes to persist database
     disks:
