@@ -49,7 +49,7 @@ services:
 
     # Build settings
     buildCommand: "npm install"
-    startCommand: "node --loader tsx server/index.ts"
+    startCommand: "node --import tsx/esm server/index.ts"
 
     # Volumes to persist database
     disks:

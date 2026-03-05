@@ -51,4 +51,4 @@ EXPOSE 3001
 
 # Use dumb-init to properly handle signals and run the server with tsx
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "--loader", "tsx", "server/index.ts"]
+CMD ["node", "--import", "tsx/esm", "server/index.ts"]
