@@ -29,6 +29,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from the React app build directory
+const distPath = path.join(process.cwd(), 'dist');
+if (process.env.NODE_ENV === 'production' || process.env.SERVE_DIST === 'true') {
+  app.use(express.static(distPath));
+}
+
 // Health check
 app.get("/api/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -118,16 +124,23 @@ app.post(
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
 
-// 404 handler
-app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    success: false,
-    error: {
-      message: "Route not found",
-      code: "NOT_FOUND",
-    },
+// SPA fallback - serve index.html for all non-API routes in production
+if (process.env.NODE_ENV === 'production' || process.env.SERVE_DIST === 'true') {
+  app.get("*", (req: Request, res: Response) => {
+    res.sendFile(path.join(distPath, "index.html"));
   });
-});
+} else {
+  // 404 handler for development
+  app.use((req: Request, res: Response) => {
+    res.status(404).json({
+      success: false,
+      error: {
+        message: "Route not found",
+        code: "NOT_FOUND",
+      },
+    });
+  });
+}
 
 // Error handler (must be last)
 app.use(errorHandler);

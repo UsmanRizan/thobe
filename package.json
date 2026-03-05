@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "seed:db": "tsx server/scripts/seedDatabase.ts",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "start": "node --loader tsx server/index.ts",
+    "build:prod": "npm run build && npm run build:server"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
