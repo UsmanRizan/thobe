@@ -1,11 +1,13 @@
 import React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { Order, OrderStatus } from "../../types";
 
 interface OrdersTableProps {
   orders: Order[];
   updatingId: string | null;
   onStatusChange: (orderId: string, newStatus: OrderStatus) => void;
+  onDownloadOrder: (order: Order) => void;
+  onDownloadOrderPDF?: (order: Order) => void;
 }
 
 const STATUS_OPTIONS: OrderStatus[] = [
@@ -44,6 +46,8 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
   orders,
   updatingId,
   onStatusChange,
+  onDownloadOrder,
+  onDownloadOrderPDF,
 }) => {
   return (
     <div className="overflow-x-auto border border-black/10 rounded-lg">
@@ -67,6 +71,9 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
             </th>
             <th className="px-6 py-4 text-left font-semibold text-black/80">
               Date
+            </th>
+            <th className="px-6 py-4 text-center font-semibold text-black/80">
+              Action
             </th>
           </tr>
         </thead>
@@ -115,6 +122,26 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
               </td>
               <td className="px-6 py-4 text-black/60 text-xs">
                 {formatDate(order.createdAt)}
+              </td>
+              <td className="px-6 py-4 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => onDownloadOrder(order)}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors"
+                    title="Download as TXT"
+                  >
+                    <Download size={16} />
+                  </button>
+                  {onDownloadOrderPDF && (
+                    <button
+                      onClick={() => onDownloadOrderPDF(order)}
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 text-red-700 transition-colors"
+                      title="Download as PDF"
+                    >
+                      <Download size={16} />
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
